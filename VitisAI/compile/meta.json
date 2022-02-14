@@ -1,0 +1,8 @@
+{
+    "lib": "libvart-dpu-runner.so",
+    "filename": "own_network_256_bigdpu.xmodel",
+    "kernel": [
+        "subgraph_block1_conv1\/Conv2D"
+    ],
+    "target": "DPUCVDX8G_ISA1_C32B3"
+}
