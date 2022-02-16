@@ -1,0 +1,8 @@
+{
+    "lib": "libvart-dpu-runner.so",
+    "filename": "hourglass_kv.xmodel",
+    "kernel": [
+        "subgraph_Add_1"
+    ],
+    "target": "DPUCZDX8G_ISA0_B3136_MAX_BG2"
+}

@@ -1,0 +1,11 @@
+model {
+   kernel {
+     mean: 112.302
+     mean: 113.22
+     mean: 110.3385
+     scale: 0.00392157
+     scale: 0.00392157
+     scale: 0.00392157
+   }
+   model_type : HOURGLASS
+}
