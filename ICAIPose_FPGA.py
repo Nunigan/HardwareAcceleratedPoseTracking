@@ -1,19 +1,13 @@
 # @Author: Simon Walser
 # @Date:   2021-09-07 15:12:42
-# @Last Modified by:   Simon Walser
-# @Last Modified time: 2021-09-15 10:30:27
+# @Last Modified by:   Michael Schmid
+# @Last Modified time: 2022-02-16
 
 import tensorflow as tf
 from tensorflow.keras.layers import *
 from tensorflow.keras.applications.vgg19 import VGG19
 from tensorflow.keras import Model
-# from keras_flops import get_flops
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from skimage.transform import resize
-# from skimage.io import imread
-# import tensorflow as tf
-# import cv2
+
 
 # from pose_parameter import PoseParameter
 
@@ -32,8 +26,7 @@ class InputBlock:
     def __call__(self, inputs):
 
 
-        # x = Lambda(lambda inp: tf.stack([inp[...,2],inp[...,1],inp[...,0]], axis=-1))(inputs)
-        # x = Lambda(lambda inp: tf.math.subtract(inp, tf.constant([[[[103.939, 116.779, 123.68]]]], dtype=tf.float32)))(x)
+   
         backbone = VGG19(include_top=False, weights='imagenet', input_tensor=inputs)
 
         # Remove last ReLU activation function
@@ -145,10 +138,6 @@ def get_model(config):
 ################################################################################
 
 if __name__ == "__main__":
-    # from skimage.io import imread
-
-    # test_img = imread('out.jpg')
-    # test_img = test_img.reshape((1,256,256,3))
 
     config = {}
     config['img_res'] = 256
@@ -159,20 +148,11 @@ if __name__ == "__main__":
     config['paf_channels']  = 28
     config['conf_channels'] = 16
 
-    # Define model
+
     model = get_model(config)
-
-    # out = model(tf.random.uniform([16,256,256,3], maxval=255))
-    # out = model(test_img)
-
-    # flops = get_flops(model, batch_size=1)
-
-
-    # tf.keras.utils.plot_model(model, show_shapes=True)
     model.summary()
-    # print(flops)
 
-    # model.load_weights('weights/my_model_weights.h5')
+    model.load_weights('../weights/weights_256.h5')
     model.save('saved_model.h5')
     
 
