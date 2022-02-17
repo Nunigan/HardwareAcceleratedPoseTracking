@@ -1,5 +1,5 @@
 #!/bin/sh
-python3 ../ICAIPose_FPGA.py
+python3 ICAIPose_FPGA.py
 python3 keras2tf.py
 source freeze.sh
 source quant.sh
