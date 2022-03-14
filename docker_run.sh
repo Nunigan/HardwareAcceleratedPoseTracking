@@ -1,24 +1,6 @@
 #!/bin/bash
 # Copyright 2020 Xilinx Inc.
 
-sed -n '1, 5p' ./setup/docker/docker/PROMPT.txt
-read -n 1 -s -r -p "Press any key to continue..." key
-
-sed -n '5, 15p' ./setup/docker/docker/PROMPT.txt
-read -n 1 -s -r -p "Press any key to continue..." key
-
-sed -n '15, 28p' ./setup/docker/docker/PROMPT.txt
-read -n 1 -s -r -p "Press any key to continue..." key
-
-sed -n '28, 61p' ./setup/docker/docker/PROMPT.txt
-read -n 1 -s -r -p "Press any key to continue..." key
-
-sed -n '62, 224p' ./setup/docker/docker/PROMPT.txt
-read -n 1 -s -r -p "Press any key to continue..." key
-
-sed -n '224, 308p' ./setup/docker/docker/PROMPT.txt
-read -n 1 -s -r -p "Press any key to continue..." key
-
 
 confirm() {
   echo -en "\n\nDo you agree to the terms and wish to proceed [y/n]? "
@@ -47,7 +29,7 @@ gid=`id -g`
 DOCKER_REPO="xilinx/"
 
 BRAND=vitis-ai
-VERSION=latest
+VERSION=1.3.411
 
 CPU_IMAGE_TAG=${DOCKER_REPO}${BRAND}-cpu:${VERSION}
 GPU_IMAGE_TAG=${DOCKER_REPO}${BRAND}-gpu:${VERSION}
