@@ -108,8 +108,8 @@ def taskDisplay(queueOut):
         frame = queueOut.get()
 	
         frame = cv2.flip(frame, 1)
-        frame = cv2.resize(frame, (1024, 1024), interpolation=cv2.INTER_LINEAR)
-        frame = cv2.copyMakeBorder(frame, height//2-512, height//2-512, width//2-512, width//2-512, cv2.BORDER_CONSTANT, value=[0,0,0])
+        # frame = cv2.resize(frame, (1024, 1024), interpolation=cv2.INTER_LINEAR)
+        # frame = cv2.copyMakeBorder(frame, height//2-512, height//2-512, width//2-512, width//2-512, cv2.BORDER_CONSTANT, value=[0,0,0])
 
         cv2.imshow('ICAIPose',frame)
         key = cv2.waitKey(1) & 0xFF
@@ -153,8 +153,8 @@ def main(argv):
     inputId = 'mediasrcbin media-device=/dev/media0 v4l2src0::io-mode=dmabuf v4l2src0::stride-align=256  ! video/x-raw, width=256, height=256, format=NV12, framerate=30/1 ! videoconvert! appsink'
     threads = int(argv[1])
     ICAIPose_xmodel = argv[2]
-    width = int(argv[3])
-    height = int(argv[4])
+    # width = int(argv[3])
+    # height = int(argv[4])
     ICAIPose_graph = xir.Graph.deserialize(ICAIPose_xmodel)
     ICAIPose_subgraphs = get_child_subgraph_dpu(ICAIPose_graph)
     assert len(ICAIPose_subgraphs) == 1 # only one DPU kernel
