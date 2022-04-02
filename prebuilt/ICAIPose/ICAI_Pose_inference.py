@@ -93,7 +93,7 @@ class ICAIPose():
     """ Retrieve output results """    
     #print("[INFO] process - get outputs ")
     OutputData0 = outputData
-
+    np.save("test_out.npy", OutputData0)
 
     # Vars
     conf_thresh = 10

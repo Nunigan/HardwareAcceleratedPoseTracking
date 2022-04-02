@@ -73,7 +73,6 @@ def taskWorker(worker,dpu,queueIn,queueOut):
 
     dpu_ICAIPose = ICAIPose(dpu)
     dpu_ICAIPose.start()
-
     
     while not bQuit:
 
