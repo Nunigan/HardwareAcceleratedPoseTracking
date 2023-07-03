@@ -43,13 +43,13 @@ class PoseDraw():
                 if np.all(data_pers[pair]):
                     inputImg = cv2.line(inputImg, tuple(data_pers[pair[0]]),
                                         tuple(data_pers[pair[1]]),
-                                        self.limb_color[i], 30)
+                                        self.limb_color[i], 10)
 
         # Draw body parts
         non_zero_data = data_int[np.all(data_int, axis=-1)]
         idx = np.tile(np.arange(data_int.shape[1])[np.newaxis], (data_int.shape[0],1))[np.all(data_int, axis=-1)]
         for i, data_kp in zip(idx, non_zero_data):
-            inputImg = cv2.circle(inputImg, tuple(data_kp),45, self.part_color[i],
+            inputImg = cv2.circle(inputImg, tuple(data_kp),15, self.part_color[i],
                                 thickness=-1)
 
         return inputImg
@@ -124,15 +124,13 @@ def run_icaipose():
     tf.keras.utils.plot_model(model, show_shapes=True)
     # Load validation image
     # img = imread('out.jpg')
-    img = imread('test_img.jpg')
-
+    img = imread('data/multi.jpg')
+    org_size = np.shape(img)[0]
     img_pp = preprocess_img(img, img_size)
 
     # Run ICAIPose
     offset = np.array([103.939, 116.779, 123.68], dtype='float32')[None,None,None,:]
     out = model(img_pp[...,::-1]-offset)
-
-
 
     conf_map = np.moveaxis(out[-1][0,:,:,:-1], [0,1,2], [1,2,0])
     kp_location = np.array([np.unravel_index(np.argmax(cm), cm.shape) for cm in conf_map])
@@ -140,11 +138,15 @@ def run_icaipose():
     kp_location[kp_confidence < conf_thresh] = 0
 
     # Draw result
-    img_draw = drawObj.drawPose(img, 331/32*kp_location[None])
+    img_draw = drawObj.drawPose(img, org_size/256*kp_location[None])
     _, axis = plt.subplots(1,1)
     axis.imshow(img_draw/255)
     axis.axis("off")
 
+    _, axis = plt.subplots(1,1)
+    axis.imshow(np.sum(np.moveaxis(out[1][0,:,:,:], [0,1,2], [1,2,0]),axis=0))
+    axis.axis("off")
+    
     plt.rcParams['font.family'] = 'STIXGeneral'
     fig, axis = plt.subplots(3,5)
     # axis.imshow(img_draw/255)
@@ -152,13 +154,13 @@ def run_icaipose():
         for j in range(5):
             axis[i,j].imshow(conf_map[j+5*i])
             axis[i,j].axis('off')
-            axis[i,j].set_title(parts[j+5*i], fontsize=25)
+            axis[i,j].set_title(parts[j+5*i], fontsize=12)
     plt.figure()
     fig.tight_layout()
     plt.imshow(np.sum(conf_map, axis=0))
     plt.axis("off")
-    plt.imsave('out_conf.png', np.sum(conf_map, axis=0))
-    plt.imsave('out_ICAI.png', img_draw/255)
+    plt.imsave('data/out_conf.png', np.sum(conf_map, axis=0))
+    plt.imsave('data/out_ICAI.png', img_draw/255)
 
     # axis.axis('off')
     plt.tight_layout()
@@ -507,9 +509,9 @@ def plot_images():
         ax[j,3].imshow(confs[2*j+1])
         ax[j,2].axis('off')
         ax[j,3].axis('off')
-
-    plt.tight_layout()
     
+    plt.tight_layout()
+    plt.show()
     
 def plot_ski():
     
@@ -601,7 +603,7 @@ def plot_ski():
 
 
 if __name__ == "__main__":
-    res = run_icaipose()
+    # res = run_icaipose()
     # mse_FPGA, mse_perlu, mse_leaky = computre_MSE()
     # confs_inference = run_Testbench()
     # mse_full = compare_Testbenches()
@@ -610,5 +612,5 @@ if __name__ == "__main__":
     # plots() 
     # plot_conf()
     # norm_confs()
-    # plot_images()
+    plot_images()
     # plot_ski()

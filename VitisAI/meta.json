@@ -1,0 +1,8 @@
+{
+    "lib": "libvart-dpu-runner.so",
+    "filename": "ICAIPose.xmodel",
+    "kernel": [
+        "subgraph_quant_block1_conv1"
+    ],
+    "target": "DPUCZDX8G_ISA1_B4096"
+}
