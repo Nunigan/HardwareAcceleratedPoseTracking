@@ -300,24 +300,25 @@ def MSE_kp():
 def plots():
     drawObj = PoseDraw()
     
-    imgs = np.load('validation_data/imgs.npy')
-    kp_FPGA = np.load('validation_data/kp_FPGA.npy')
-    kp_truth = np.load('validation_data/kp_truth.npy')
-    kp_leaky = np.load('validation_data/kp_Leaky.npy')
-    kp_perlu = np.load('validation_data/kp_prelu.npy')
+    ims = np.load('data/out_new.npy')
+    ims_fpga = np.load('data/out_fpga.npy')
+    # kp_FPGA = np.load('validation_data/kp_FPGA.npy')
+    # kp_truth = np.load('validation_data/kp_truth.npy')
+    # kp_leaky = np.load('validation_data/kp_Leaky.npy')
+    # kp_perlu = np.load('validation_data/kp_prelu.npy')
     
-    offset = np.array([103.939, 116.779, 123.68], dtype='float32')[None,None,:]
+    # offset = np.array([103.939, 116.779, 123.68], dtype='float32')[None,None,:]
 
     # img_draw = drawObj.drawPose(imgs[n], kp_FPGA[n][None])
     # img_draw = drawObj.drawPose_multi(np.ones((1024,1024,3)),[kp_FPGA[n][None],kp_truth[n][None],kp_leaky[n][None],kp_perlu[n][None]])
     
-    ims = []
-    for i in range(2142):
-        im = drawObj.drawPose_multi(imgs[i],[kp_FPGA[i][None],kp_truth[i][None],kp_leaky[i][None],kp_perlu[i][None]], 6, i).astype(np.uint8())
-        im = np.flip(im, axis=-1) 
-        ims.append(im)
+    # ims = []
+    # for i in range(2142):
+    #     # im = drawObj.drawPose_multi(imgs[i],[kp_FPGA[i][None],kp_truth[i][None],kp_leaky[i][None],kp_perlu[i][None]], 6, i).astype(np.uint8())
+    #     # im = np.flip(im, axis=-1) 
+    #     ims.append(im)
     
-    no_of_images = 500
+    no_of_images = 1000
     image_id = 0     # initially we are starting from 0th image (1st image)
 
     while image_id < no_of_images:  # iterating until we get at the end of the images list
@@ -338,7 +339,12 @@ def plots():
             image_id += 1   # incrementing image_id to get next image id
             continue
 
-        cv2.imshow('Slideshow', ims[image_id])  # displaying clear image
+        im = cv2.cvtColor(ims[image_id]/255, cv2.COLOR_BGR2RGB)
+        # im_fgpa = cv2.cvtColor(ims_fpga[image_id]/255, cv2.COLOR_BGR2RGB)
+        # im = cv2.vconcat([im_fgpa, im])
+        # im = cv2.resize(im, (512, 1024))
+
+        cv2.imshow('Slideshow', im)  # displaying clear image
 
         key = cv2.waitKey(10000000)   # taking key from user with 1000 ms delay
         
@@ -454,7 +460,7 @@ def plot_conf():
         
         
         window_name='Slideshow'
-        img_colorized = cv2.applyColorMap(combined, cmapy.cmap('viridis'))
+        img_colorized = cv2.applyColorMadp(combined, cmapy.cmap('viridis'))
         
         img_colorized = cv2.putText(img_colorized, 'image ' +str(image_id), (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2, cv2.LINE_AA)
 
@@ -609,8 +615,8 @@ if __name__ == "__main__":
     # mse_full = compare_Testbenches()
     # kp, conf = computre_kp_from_confs()
     # f,l,p, f_f, l_f, p_f = MSE_kp()
-    # plots() 
+    plots() 
     # plot_conf()
     # norm_confs()
-    plot_images()
+    # plot_images()
     # plot_ski()
