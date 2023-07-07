@@ -37,7 +37,11 @@ class ICAIPose():
         self.color_part = self.drawObj.part_color
         self.color_limb = self.drawObj.limb_color
         self.limbs = self.drawObj.limbs
-
+        self.randint256x256 = np.random.randint(0,255,size=(256,256), dtype=np.uint16)
+        self.width = 960
+        self.height = 540
+        self.crop_left = (self.width-self.height)//2
+        self.crop_right = self.width - (self.width-self.height)//2
 
     def start(self):
 
@@ -56,28 +60,19 @@ class ICAIPose():
 
     def pre_process(self, img):
 
-        img = img[:,210:750]
+        img = img[:,self.crop_left:self.crop_right]
 
         img = cv2.resize(img, (256,256))
 
         """ Image pre-processing """
-        _B_MEAN = 103.939
-        _G_MEAN = 116.779
-        _R_MEAN = 123.6
-        means = [_B_MEAN, _G_MEAN, _R_MEAN]
-        scales = [1,1,1]
-        R, G, B = cv2.split(img)
-        B = (B - means[0]) * scales[0] * 0.5
-        G = (G - means[1]) * scales[1] * 0.5
-        R = (R - means[2]) * scales[2] * 0.5
-        img = cv2.merge([B, G, R])
+        offset = np.array([103.939, 116.779, 123.68], dtype='float32')[None,None,None,:]
+        img = (img[...,::-1]-offset)*0.5
         img = img.astype(np.int8)
         return img
 
     def process(self,img):
         #print("[INFO] facedetect process")
         # t = time.time()
-
         im_org = img
         img = self.pre_process(img)
         dpu = self.dpu
@@ -157,55 +152,98 @@ class ICAIPose():
         #     keypoints.append(coordinates.astype(np.int32)[...,::-1])
 
         for cm in conf_map:
-            kp = []
-            # cm[cm<20] = 0
-            while True:
-                max = np.unravel_index(np.argmax(cm), cm.shape)
-                if cm[max] < conf_thresh:
-                    break
-                rr, cc = disk(max, 25, shape=(256,256))
-                cm[rr, cc] = 0
-                max = list(max)
-                max[0] = max[0] * 540/256
-                max[1] = max[1] * 540/256+210
 
-                kp.append(max)
-            keypoints.append((np.array(kp)).astype(np.int32)[...,::-1])
+            cm = np.abs(cm*255).astype(np.uint16)+self.randint256x256
+            dil = cv2.dilate(cm, np.ones((10,10),dtype=np.uint8), 1)
+            cor = np.nonzero(np.logical_and(cm == dil, cm>20*255))
+            kp = np.swapaxes(np.array(cor), 0,1).astype(np.int32)[...,::-1]
+            if len(kp) != 0:
+                kp[:,1] = kp[:,1] * self.height/256
+                kp[:,0] = kp[:,0] * self.height/256+self.crop_left
+            keypoints.append(kp)
+            # kp = []
+            # while True:
+            #     max = np.unravel_index(np.argmax(cm), cm.shape)
+            #     if cm[max] < conf_thresh:
+            #         break
+            #     rr, cc = disk(max, 25, shape=(256,256))
+            #     cm[rr, cc] = 0
+            #     max = list(max)
+            #     max[0] = max[0] * 540/256
+            #     max[1] = max[1] * 540/256+210
 
-        cnt = 0
+            #     kp.append(max)
+            # keypoints.append((np.array(kp)).astype(np.int32)[...,::-1])
+
+        n_pers = []
+        sorted = []
         for kps in keypoints:
+            sorted.append(kps[np.argsort(kps,axis=0)[:,0]])
+            n_pers.append(len(kps))
+        n_pers = np.max(n_pers)
+        
+        cnt = 0
+        for kps in sorted:
             for kp in kps:
                 img = cv2.circle(img, tuple(kp), 3, self.color_part[cnt], thickness=-1)
             cnt += 1
       
 
+        # for k, (a,b) in enumerate(self.limbs):
+        #     pts = []
+        #     flag = False
+        #     dist_out = []
+        #     for kp in keypoints[a]:
+        #         if len(keypoints[a]) > len(keypoints[b]):
+        #             dist = []
+        #             flag = True
+        #             for j in range(len(keypoints[b])):
+        #                 dist.append(np.linalg.norm(kp-keypoints[b][j]))
+        #                 pts.append([kp, keypoints[b][j]])
+        #             dist_out.append(dist)
+        #         else:
+        #             dist = []
+        #             for j in range(len(keypoints[b])):
+        #                 dist.append(np.linalg.norm(kp-keypoints[b][j]))
+        #             pts.append([kp, keypoints[b][np.argmin(dist)]])
+        #     if flag:
+        #         pts = np.array(pts)
+        #         pts = pts[np.argsort(np.array(dist_out).flatten())[:min(len(keypoints[a]), len(keypoints[b]))]]
+        #         flag = False
+        #     for p1, p2 in pts:
+        #         # if np.linalg.norm(p1-p2) < org_size[1]/3:
+        #         img = cv2.line(img, p1, p2, self.color_limb[k], 2)
+
+
+
         for k, (a,b) in enumerate(self.limbs):
-            pts = []
-            flag = False
-            dist_out = []
-            for kp in keypoints[a]:
-                if len(keypoints[a]) > len(keypoints[b]):
+            if len(sorted[a]) == len(sorted[b]):
+                for i in range(len(sorted[a])):
+                    img = cv2.line(img, sorted[a][i], sorted[b][i], self.color_limb[k], 2)
+            else:
+                dist_out = []
+                pts = []
+                for kp in sorted[a]:
                     dist = []
-                    flag = True
-                    for j in range(len(keypoints[b])):
-                        dist.append(np.linalg.norm(kp-keypoints[b][j]))
-                        pts.append([kp, keypoints[b][j]])
+                    for j in range(len(sorted[b])):
+                        dist.append(np.linalg.norm(kp-sorted[b][j]))
+                        pts.append([kp, sorted[b][j]])
                     dist_out.append(dist)
-                else:
-                    dist = []
-                    for j in range(len(keypoints[b])):
-                        dist.append(np.linalg.norm(kp-keypoints[b][j]))
-                    pts.append([kp, keypoints[b][np.argmin(dist)]])
-            if flag:
                 pts = np.array(pts)
-                pts = pts[np.argsort(np.array(dist_out).flatten())[:min(len(keypoints[a]), len(keypoints[b]))]]
-                flag = False
-            for p1, p2 in pts:
-                if np.linalg.norm(p1-p2) < org_size[1]/3:
+                pts = pts[np.argsort(np.array(dist_out).flatten())[:min(len(sorted[a]), len(sorted[b]))]]
+                for p1, p2 in pts:
                     img = cv2.line(img, p1, p2, self.color_limb[k], 2)
 
-        img = cv2.line(img, (210,0), (210,540), (255,255,255), 1)
-        img = cv2.line(img, (750,0), (750,540), (255,255,255), 1)
+        img = cv2.line(img, (self.crop_left,0), (self.crop_left,self.height), (255,255,255), 1)
+        img = cv2.line(img, (self.crop_right, 0), (self.crop_right,self.height), (255,255,255), 1)
+
+        img = cv2.flip(img, 1)
+
+        # img = cv2.resize(
+        #     img,
+        #     (1920, 1080),
+        #     interpolation=cv2.INTER_NEAREST,
+        # )
 
 
         return img
@@ -228,10 +266,33 @@ class ICAIPose():
 
     def post_conf(self, conf):
         conf_map = np.moveaxis(conf[-1][0,:,:,:-1], [0,1,2], [1,2,0])
+
+
         # conf_map = np.where(conf_map<10,0,1)
+
+        # conf_map = np.sum(conf_map, axis=0)
+        # conf_map = (conf_map-np.min(conf_map))/(np.max(conf_map)-np.min(conf_map))
+        keypoints = []
+        confs = []
+        for cm in conf_map:
+            cm = np.clip(cm, 0, 255).astype(np.uint16)*1000+np.random.randint(0,255,size=(256,256), dtype=np.uint16)
+            dil = cv2.dilate(cm, np.ones((15,15),dtype=np.uint16), 1)
+            cor = np.nonzero(np.logical_and(cm == dil, cm>20*1000))
+            kp = np.swapaxes(np.array(cor), 0,1).astype(np.int32)[...,::-1]
+            keypoints.append(kp)
 
         conf_map = np.sum(conf_map, axis=0)
         conf_map = (conf_map-np.min(conf_map))/(np.max(conf_map)-np.min(conf_map))
+
+        conf_map = cv2.cvtColor(conf_map.astype(np.float32), cv2.COLOR_GRAY2RGB)
+
+        cnt = 0
+        for kps in keypoints:
+            for kp in kps:
+                conf_map = cv2.circle(conf_map, tuple(kp), 3, self.color_part[cnt], thickness=-1)
+            cnt += 1
+      
+
         return conf_map
 
 

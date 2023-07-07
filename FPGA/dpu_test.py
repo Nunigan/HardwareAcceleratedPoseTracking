@@ -39,15 +39,20 @@ def main(argv):
     dpu_ICAIPose = ICAIPose(runner)
     dpu_ICAIPose.start()
 
-    frame = cv2.imread('data/multi.jpg')
-    frame = cv2.resize(frame, (1024,1024))
+    # frame = cv2.imread('data/multi.jpg')
+    # frame = cv2.resize(frame, (256,256))
 
-    res = dpu_ICAIPose.process(frame)
+    frames = [cv2.imread('data/im1.jpg'), cv2.imread('data/im2.jpg'), cv2.imread('data/im3.jpg')]
+
+
+
+    for im in frames:
+        res = dpu_ICAIPose.process(im)
     # res = resize(res, (1024,1024))
 
-    cv2.imshow('frame', res)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+        # cv2.imshow('frame', res)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":

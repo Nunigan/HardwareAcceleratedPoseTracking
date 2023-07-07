@@ -82,9 +82,6 @@ def taskCapture(inputId, queueIn):
         print("[ERROR] taskCapture : Failed to open camera ", inputId )
         exit()
 
-    # img = cv2.imread('test_img.jpg')
-    # img = cv2.resize(img, (256,256))
-
     while not bQuit:
         # Capture image from camera
         ret, frame = cam.read()
@@ -202,18 +199,10 @@ class App:
             # frame = frame[y_offset:y_offset+new_h]
 
             # # Mirror frame since the viewer might find a mirror view more intuitive
-            frame = cv2.flip(frame, 1)
-
-            # Rescale frame to the screen size
-            frame = cv2.resize(
-                frame,
-                (self.width, self.height),
-                interpolation=cv2.INTER_NEAREST,
-            )
 
             # assert frame.shape[:2] == (self.height, self.width)
-            # cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
-            # cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+            cv2.namedWindow("window", cv2.WND_PROP_FULLSCREEN)
+            cv2.setWindowProperty("window",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
             # Write frame to the sink
             cv2.imshow("window", frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -232,7 +221,7 @@ class App:
 
 
 def main(argv):
-    video_capture_str = "v4l2src device=/dev/video0 ! image/jpeg,framerate=10/1,width=960, height=540,type=video ! jpegdec ! videoconvert ! video/x-raw ! appsink"
+    video_capture_str = "v4l2src device=/dev/video0 ! image/jpeg,framerate=20/1,width=960, height=540,type=video ! jpegdec ! videoconvert ! video/x-raw ! appsink"
     # video_capture_str = 'vid.mp4'
     thread_count = int(argv[1])
     ICAIPose_xmodel = argv[2]
