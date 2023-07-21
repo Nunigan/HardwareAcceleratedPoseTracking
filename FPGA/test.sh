@@ -1,1 +1,0 @@
- gst-launch-1.0 v4l2src device=/dev/video0 ! videoscale ! videoconvert ! video/x-raw, width=1920, height=1080, format=NV12, framerate=30/1 ! videoconvert  ! xvimagesink
