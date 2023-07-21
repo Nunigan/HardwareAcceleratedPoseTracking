@@ -7,7 +7,7 @@ import threading
 import sys
 from skimage.transform import resize
 from skimage.io import imread
-
+import numpy as np
 from imutils.video import FPS
 
 from ICAI_Pose_inference import ICAIPose
@@ -31,7 +31,7 @@ def get_child_subgraph_dpu(graph: "Graph") -> List["Subgraph"]:
 def main(argv):
     # video_capture_str = 'mediasrcbin media-device=/dev/media0 v4l2src0::io-mode=dmabuf v4l2src0::stride-align=256  ! video/x-raw, width=256, height=256, format=NV12, framerate=30/1 ! videoconvert! appsink'
 
-    ICAIPose_xmodel = 'ICAIPose.xmodel'
+    ICAIPose_xmodel = 'ICAIPose320x180.xmodel'
 
     ICAIPose_graph = xir.Graph.deserialize(ICAIPose_xmodel)
     ICAIPose_subgraphs = get_child_subgraph_dpu(ICAIPose_graph)
@@ -39,15 +39,25 @@ def main(argv):
     dpu_ICAIPose = ICAIPose(runner)
     dpu_ICAIPose.start()
 
-    frame = cv2.imread('data/multi.jpg')
-    frame = cv2.resize(frame, (1024,1024))
+    # frame = cv2.imread('data/multi.jpg')
+    # frame = cv2.resize(frame, (256,256))
 
-    res = dpu_ICAIPose.process(frame)
+    frames = [cv2.imread('data/im1.jpg'), cv2.imread('data/im2.jpg'), cv2.imread('data/im3.jpg')]
+    # frames = [cv2.imread('data/im1.jpg')]
+
+
+
+    for im in frames:
+        print(im.shape)
+
+        res = dpu_ICAIPose.process(im)
     # res = resize(res, (1024,1024))
 
-    cv2.imshow('frame', res)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+        # res = np.swapaxes(res, 1, 0)
+
+        cv2.imshow('frame', res)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":

@@ -1,1 +1,2 @@
-./docker_run.sh xilinx/vitis-ai-cpu:1.3.411
+./docker_run.sh xilinx/vitis-ai-cpu:2.5
+

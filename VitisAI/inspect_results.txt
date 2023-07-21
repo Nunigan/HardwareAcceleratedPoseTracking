@@ -378,7 +378,7 @@ Device: INPUT
 Notes: 
     None
 Layer Config:
-{'batch_input_shape': (None, 256, 256, 3),
+{'batch_input_shape': (None, 960, 540, 3),
  'dtype': 'float32',
  'name': 'input_1',
  'ragged': False,

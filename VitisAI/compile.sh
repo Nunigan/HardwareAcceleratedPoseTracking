@@ -1,0 +1,1 @@
+vai_c_tensorflow2 -m quantized.h5 -a /opt/vitis_ai/compiler/arch/DPUCZDX8G/KV260/arch.json -o . -n ICAIPose --options '{"input_shape": "1,240,320,3"}'

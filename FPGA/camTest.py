@@ -3,9 +3,10 @@ import cv2
 from imutils.video import FPS
 import numpy as np
 
-# define a video capture object
-vid = cv2.VideoCapture("v4l2src device=/dev/video0 ! image/jpeg,framerate=30/1,width=960, height=540,type=video ! jpegdec ! videoconvert ! video/x-raw ! appsink", cv2.CAP_GSTREAMER)
-# vid = cv2.VideoCapture("/home/root/ICAIPose/vid.mp4")
+cam_width = 1280
+cam_height = 720
+video_capture_str = "v4l2src device=/dev/video0 ! videoscale ! videoconvert ! video/x-raw, width={}, height={}, format=NV12, framerate=30/1 ! videoconvert ! appsink".format(cam_width, cam_height)
+vid = cv2.VideoCapture(video_capture_str)
 
 fpsIn = FPS().start()
 
